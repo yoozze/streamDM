@@ -17,9 +17,14 @@ The main advantages of streamDM in C++ over other C/C++ data stream libraries ar
 ## Getting Started
 
 
-Getting Started
+Getting Started:
 
-First download and build streamDM in C++:
+First download log4cpp library (```https://github.com/orocos-toolchain/log4cpp```). 
+Install it in a separate directory and note the shared library file location (usually /usr/local/lib). Add the shared library directory to the path:
+```export LD_LIBRARY_PATH=/usr/local/lib```. Be sure, to copy header files from log4cpp include directory into log4cpp in the ```code/src``` directory.
+
+
+Then download and build streamDM in C++:
 
 ```
 git clone https://github.com/huawei-noah/streamDM-Cpp.git
