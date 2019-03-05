@@ -16,6 +16,11 @@
  */
 
 #include "ArffReader.h"
+#ifdef _MSC_VER
+#define access _access
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#endif
 
 REGISTER_CLASS(ArffReader);
 REGISTER_COMMAND_LINE_PARAMETER(ArffReader, "{\"type\":\"Reader\","

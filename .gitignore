@@ -1,2 +1,5 @@
 *.arff
-streamdm-cpp
+streamdm-cpp.exe
+Debug/
+Release/
+.vs/

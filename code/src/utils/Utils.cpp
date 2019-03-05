@@ -19,11 +19,16 @@
 #include <stdlib.h>
 #include <time.h>
 #include <algorithm>
-#include <unistd.h>
+// #include <unistd.h>
+#include <io.h>
 #include <cmath>
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#ifdef _MSC_VER
+#define access _access
+#endif
 
 bool Utils::init = false;
 Utils utils;

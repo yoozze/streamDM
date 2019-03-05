@@ -16,6 +16,9 @@
  */
 
 #include "AsciiReader.h"
+#ifdef _MSC_VER
+#define access _access
+#endif
 
 REGISTER_CLASS(AsciiReader) ;
 

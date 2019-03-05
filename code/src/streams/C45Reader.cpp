@@ -17,6 +17,10 @@
 
 #include "C45Reader.h"
 
+#ifdef _MSC_VER
+#define access _access
+#endif
+
 REGISTER_CLASS(C45Reader)
 REGISTER_COMMAND_LINE_PARAMETER(C45Reader, "{\"type\":\"Reader\","
 		"\"name\":\"C45Reader\","

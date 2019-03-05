@@ -136,6 +136,7 @@ void SparseInstance::init(const char* in_string)
     if (length == 0) dieFormat("Empty example string.");
 
     // Get class label.
+
     if (!sscanf(in_string, "%f", &m_y))
         dieFormat("Class label must be real number.");
 
