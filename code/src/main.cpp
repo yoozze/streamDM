@@ -20,10 +20,6 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
-	const std::string initFileName = "conf/log4cpp.properties";
-
-	Log::openLog(initFileName);
-
 	string taskName;
 	string taskParams;
 	bool ret = CommandLineParser::parser(argc, argv, taskName, taskParams);
@@ -35,6 +31,5 @@ int main(int argc, char* argv[]) {
 	task->setParams(taskParams);
 	task->doTask();
 
-	Log::closeLog();
 	return 0;
 }
