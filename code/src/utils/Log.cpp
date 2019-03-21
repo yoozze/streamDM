@@ -17,15 +17,10 @@
 
 #include "Log.h"
 
-log4cpp::Category& log_smartDM = log4cpp::Category::getRoot();
+SimpleLog log_smartDM;
 
-bool Log::openLog(const std::string& configfile) {
-	//std::string initFileName = "conf/log4cpp.properties";
-	log4cpp::PropertyConfigurator::configure(configfile);
-	
+bool Log::openLog(const std::string& configfile) {	
 	return true;
 }
 
-void Log::closeLog() {
-	log4cpp::Category::shutdown();
-}
+void Log::closeLog() {}

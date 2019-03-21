@@ -18,13 +18,7 @@
 #ifndef Log_H_
 #define Log_H_
 
-#ifdef _MSC_VER
-#pragma comment(lib, "log4cpp.lib")  
-#pragma comment(lib, "ws2_32.lib")  
-#endif
-
-#include <log4cpp/Category.hh>
-#include <log4cpp/PropertyConfigurator.hh>
+#include "SimpleLog.h"
 
 #ifdef _MSC_VER
 #define LOG_DEBUG ::log_smartDM.debug
@@ -38,7 +32,7 @@
 #define LOG_ERROR(x, args...) log_smartDM.error(x, ##args)
 #endif
 
-extern log4cpp::Category& log_smartDM;
+extern SimpleLog log_smartDM;
 
 class Log {
 public:
