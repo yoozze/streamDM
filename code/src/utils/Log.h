@@ -21,6 +21,7 @@
 #include <iostream>
 #include <string>
 #include <stdarg.h>
+#include "../API.h"
 
 #ifdef _MSC_VER
 #define LOG_DEBUG ::log_smartDM.debug
@@ -36,7 +37,7 @@
 
 using namespace std;
 
-class Log {
+class STREAMDM_API Log {
 public:
 
 	/**

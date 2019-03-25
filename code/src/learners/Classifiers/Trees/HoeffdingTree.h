@@ -22,14 +22,16 @@
 #include <string>
 #include <list>
 #include "../../../Common.h"
+#include "../../../API.h"
 #include "HTAttributeClassObserver.h"
 #include "InstanceConditionalTest.h"
 #include "HTNode.h"
+
 using namespace std;
 
 namespace HT {
 
-class HoeffdingTree: public Learner {
+class STREAMDM_API HoeffdingTree: public Learner {
 public:
 	HoeffdingTree();
 	virtual ~HoeffdingTree();
