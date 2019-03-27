@@ -15,6 +15,7 @@
  *
  */
 
+#include <unordered_set>
 #include "HoeffdingTree.h"
 #include "HATNode.h"
 
@@ -140,8 +141,75 @@ void HoeffdingTree::Params::toJson(Json::Value& jv) {
 	jv["nbThreshold"] = this->nbThreshold;
 }
 
+void HoeffdingTree::setInstanceInformation(const int numberOfAttributes, const int numberOfClasses) {
+	mInstanceInformation = new InstanceInformation();
+
+	for (int i = 0; i < numberOfAttributes; i++) {
+		Attribute* attr = new Attribute();
+		mInstanceInformation->addAttribute(attr, i);
+	}
+
+	vector<string>* classes = new vector<string>();
+	for (int i = 0; i < numberOfClasses; i++) {
+		classes->push_back(to_string(i));
+	}
+	Attribute* attr = new Attribute(*classes);
+	mInstanceInformation->addClass(attr, 0);
+}
+
 void HoeffdingTree::train(const Instance& instance) {
 	trainOnInstanceImpl(&instance);
+}
+
+void HoeffdingTree::train(const vector<double>& values, const int label, const int numberOfClasses) {
+	if (mInstanceInformation == nullptr) {
+		setInstanceInformation(values.size(), numberOfClasses);
+	}
+
+	// Build instance
+	DenseInstance instance;
+	instance.setInstanceInformation(mInstanceInformation);
+	instance.addValues(values);
+
+	vector<double> labels(1);
+	labels[0] = label;
+	instance.addLabels(labels);
+
+	// Train
+	trainOnInstanceImpl(&instance);
+}
+
+void HoeffdingTree::fit(const vector<vector<double>>& values, const vector<int>& labels) {
+	// Get number of classes
+	int numberOfClasses = 0;
+	unordered_set<int> set;
+
+	for (int i = 0; i < labels.size(); i++) {
+		if (set.find(labels[i]) == set.end()) {
+			set.insert(labels[i]);
+			numberOfClasses++;
+		}
+	}
+
+	setInstanceInformation(values[0].size(), numberOfClasses);
+	
+	// Train
+	for (int i = 0; i < values.size(); i++) {
+		train(values[i], labels[i], numberOfClasses);
+	}
+}
+
+int HoeffdingTree::predict(const vector<double>& values) {
+	if (!mInstanceInformation) {
+		LOG_ERROR("You must first build model!");
+		return -1;
+	}
+
+	DenseInstance instance;
+	instance.setInstanceInformation(mInstanceInformation);
+	instance.addValues(values);
+
+	return Learner::predict(instance);
 }
 
 double* HoeffdingTree::getPrediction(const Instance& instance) {

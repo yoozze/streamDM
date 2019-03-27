@@ -37,6 +37,9 @@ public:
 	virtual ~HoeffdingTree();
 
 	void train(const Instance&);
+	void train(const vector<double>& values, const int label, const int numberOfClasses);
+	void fit(const vector<vector<double>>& values, const vector<int>& label);
+	int predict(const vector<double>& values);
 	double* getPrediction(const Instance&);
 	double probability(const Instance&, int);
 
@@ -116,6 +119,7 @@ private:
 	bool mShowTreePath;
 	stringstream mTreePath;
 	void showTreePath(const Instance& instance,  Node* node);
+	void setInstanceInformation(const int numberOfAttributes, const int numberOfClasses);
 
 protected:
 	virtual bool importFromJson(const Json::Value& jv);
@@ -123,6 +127,7 @@ protected:
 
 	bool mFixTree;
 	vector<int> mTreePropertyIndexList;
+	InstanceInformation* mInstanceInformation = nullptr;
 };
 // class HoeffdingTree
 
