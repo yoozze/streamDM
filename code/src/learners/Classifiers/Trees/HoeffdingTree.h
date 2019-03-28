@@ -36,10 +36,12 @@ public:
 	HoeffdingTree();
 	virtual ~HoeffdingTree();
 
+	void setNumberOfClasses(const int numberOfClasses);
 	void train(const Instance&);
-	void train(const vector<double>& values, const int label, const int numberOfClasses);
+	void train(const vector<double>& values, const int label, const int numberOfClasses = 0);
 	void fit(const vector<vector<double>>& values, const vector<int>& label);
 	int predict(const vector<double>& values);
+	int predict(const Instance&);
 	double* getPrediction(const Instance&);
 	double probability(const Instance&, int);
 
@@ -128,6 +130,7 @@ protected:
 	bool mFixTree;
 	vector<int> mTreePropertyIndexList;
 	InstanceInformation* mInstanceInformation = nullptr;
+	int mNumberOfClasses = 0;
 };
 // class HoeffdingTree
 

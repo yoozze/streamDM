@@ -145,25 +145,47 @@ void HoeffdingTree::setInstanceInformation(const int numberOfAttributes, const i
 	mInstanceInformation = new InstanceInformation();
 
 	for (int i = 0; i < numberOfAttributes; i++) {
-		Attribute* attr = new Attribute();
+		//Attribute* attr = new Attribute();
+		Attribute* attr;
+		if (i < 10) {
+			attr = new Attribute();
+		} else {
+			vector<string>* values = new vector<string>();
+			values->push_back("0");
+			values->push_back("1");
+			attr = new Attribute(*values);
+		}
 		mInstanceInformation->addAttribute(attr, i);
 	}
 
-	vector<string>* classes = new vector<string>();
+	vector<string> classes;
 	for (int i = 0; i < numberOfClasses; i++) {
-		classes->push_back(to_string(i));
+		classes.push_back(to_string(i));
 	}
-	Attribute* attr = new Attribute(*classes);
-	mInstanceInformation->addClass(attr, 0);
+	mInstanceInformation->addClass(new Attribute(classes), 0);
 }
 
 void HoeffdingTree::train(const Instance& instance) {
 	trainOnInstanceImpl(&instance);
 }
 
+void HoeffdingTree::setNumberOfClasses(const int numberOfClasses) {
+	mNumberOfClasses = numberOfClasses;
+}
+
 void HoeffdingTree::train(const vector<double>& values, const int label, const int numberOfClasses) {
 	if (mInstanceInformation == nullptr) {
-		setInstanceInformation(values.size(), numberOfClasses);
+		const int nc = mNumberOfClasses ? mNumberOfClasses : numberOfClasses;
+
+		if (!nc) {
+			LOG_WARN("You must define number of classes!");
+		}
+
+		if (!mNumberOfClasses) {
+			mNumberOfClasses = nc;
+		}
+
+		setInstanceInformation(values.size(), nc);
 	}
 
 	// Build instance
@@ -172,7 +194,7 @@ void HoeffdingTree::train(const vector<double>& values, const int label, const i
 	instance.addValues(values);
 
 	vector<double> labels(1);
-	labels[0] = label;
+	labels[0] = (double)label;
 	instance.addLabels(labels);
 
 	// Train
@@ -180,22 +202,23 @@ void HoeffdingTree::train(const vector<double>& values, const int label, const i
 }
 
 void HoeffdingTree::fit(const vector<vector<double>>& values, const vector<int>& labels) {
-	// Get number of classes
-	int numberOfClasses = 0;
-	unordered_set<int> set;
+	if (!mNumberOfClasses) {
+		// Get number of classes
+		unordered_set<int> set;
 
-	for (int i = 0; i < labels.size(); i++) {
-		if (set.find(labels[i]) == set.end()) {
-			set.insert(labels[i]);
-			numberOfClasses++;
+		for (int i = 0; i < labels.size(); i++) {
+			if (set.find(labels[i]) == set.end()) {
+				set.insert(labels[i]);
+				mNumberOfClasses++;
+			}
 		}
 	}
 
-	setInstanceInformation(values[0].size(), numberOfClasses);
+	setInstanceInformation(values[0].size(), mNumberOfClasses);
 	
 	// Train
 	for (int i = 0; i < values.size(); i++) {
-		train(values[i], labels[i], numberOfClasses);
+		train(values[i], labels[i]);
 	}
 }
 
@@ -209,6 +232,10 @@ int HoeffdingTree::predict(const vector<double>& values) {
 	instance.setInstanceInformation(mInstanceInformation);
 	instance.addValues(values);
 
+	return Learner::predict(instance);
+}
+
+int HoeffdingTree::predict(const Instance& instance) {
 	return Learner::predict(instance);
 }
 
