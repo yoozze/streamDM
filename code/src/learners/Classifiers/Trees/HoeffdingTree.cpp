@@ -146,16 +146,17 @@ void HoeffdingTree::setInstanceInformation(const int numberOfAttributes, const i
 
 	for (int i = 0; i < numberOfAttributes; i++) {
 		//Attribute* attr = new Attribute();
-		Attribute* attr;
-		if (i < 10) {
-			attr = new Attribute();
-		} else {
-			vector<string>* values = new vector<string>();
-			values->push_back("0");
-			values->push_back("1");
-			attr = new Attribute(*values);
-		}
-		mInstanceInformation->addAttribute(attr, i);
+		//Attribute* attr;
+		//if (i < 10) {
+		//	attr = new Attribute();
+		//} else {
+		//	vector<string>* values = new vector<string>();
+		//	values->push_back("0");
+		//	values->push_back("1");
+		//	attr = new Attribute(*values);
+		//}
+		//mInstanceInformation->addAttribute(attr, i);
+		mInstanceInformation->addAttribute(new Attribute(), i);
 	}
 
 	vector<string> classes;
