@@ -34,11 +34,15 @@ namespace HT {
 class STREAMDM_API HoeffdingTree: public Learner {
 public:
 	HoeffdingTree();
+	HoeffdingTree(const vector<string>& attributes, const vector<string>& classes);
+	HoeffdingTree(const int numberOfAttributes, const int numberOfClasses);
 	virtual ~HoeffdingTree();
 
-	void setNumberOfClasses(const int numberOfClasses);
+	bool setParams(const string& params);
+	void setInstanceInformation(const vector<string>& attributes, const vector<string>& classes);
+	void setInstanceInformation(const int numberOfAttributes, const int numberOfClasses);
 	void train(const Instance&);
-	void train(const vector<double>& values, const int label, const int numberOfClasses = 0);
+	void train(const vector<double>& values, const int label);
 	void fit(const vector<vector<double>>& values, const vector<int>& label);
 	int predict(const vector<double>& values);
 	int predict(const Instance&);
@@ -114,6 +118,7 @@ public:
 	virtual void toJson(Json::Value& jv);
 
 private:
+	void init();
 	string showSplitSuggestion(AttributeSplitSuggestion* ass);
 	void showBestSplitSuggestions(
 			list<AttributeSplitSuggestion*>* bestSplitSuggestions);
@@ -121,7 +126,7 @@ private:
 	bool mShowTreePath;
 	stringstream mTreePath;
 	void showTreePath(const Instance& instance,  Node* node);
-	void setInstanceInformation(const int numberOfAttributes, const int numberOfClasses);
+	vector<string> splitLabels(const string& labelString);
 
 protected:
 	virtual bool importFromJson(const Json::Value& jv);
@@ -130,7 +135,6 @@ protected:
 	bool mFixTree;
 	vector<int> mTreePropertyIndexList;
 	InstanceInformation* mInstanceInformation = nullptr;
-	int mNumberOfClasses = 0;
 };
 // class HoeffdingTree
 
