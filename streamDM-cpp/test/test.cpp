@@ -74,6 +74,12 @@ int main()
 	//}
 
 	ifstream infile(dataFile);
+
+	if (infile.fail()) {
+		printf("Failed to open file: %s ", dataFile.c_str());
+		return 1;
+	}
+
 	string line;
 
 	while (getline(infile, line)) {
@@ -212,7 +218,7 @@ int main()
 	// Predict
 	std::cout << endl << "Predicting... " << endl;
 
-	for (int i = 0; i < 500; i++) {
+	for (int i = 0; i < min(500, (int)X.size()); i++) {
 		//printf("\n");
 		//for (int j = 0; j < X[i].size(); j++) {
 		//	printf("%f ", X[i][j]);
