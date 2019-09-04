@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 #include <fstream>
 #include <typeinfo>
@@ -6,237 +7,287 @@
 #include "streams/CSVReader.h"
 #include "learners/Classifiers/Trees/HoeffdingTree.h"
 #include "evaluation/BasicClassificationEvaluator.h"
+#include "tasks/Task.h"
 
 using namespace std;
 using namespace HT;
 
-//int main(int argc, char* argv[]) {
-//	string taskName;
-//	string taskParams;
-//	bool ret = CommandLineParser::parser(argc, argv, taskName, taskParams);
-//	if (!ret) {
-//		return 0;
-//	}
-//
-//	Task* task = (Task*)CREATE_CLASS(taskName);
-//	task->setParams(taskParams);
-//	task->doTask();
-//
-//	return 0;
-//}
+const string htParams = "{"
+    "\"MaxByteSize\":33554432,"
+    "\"MemoryEstimatePeriod\":1000000,"
+    "\"GracePeriod\":200,"
+    "\"SplitConfidence\":0.0000001,"
+    "\"TieThreshold\":0.05,"
+    "\"BinarySplits\":false,"
+    "\"StopMemManagement\":false,"
+    "\"RemovePoorAtts\":false,"
+    "\"LeafLearner\":\"NB\","
+    "\"BbThreshold\":0,"
+    "\"ShowTreePath\":false,"
+    "\"TreePropertyIndexList\":\"\","
+    "\"NoPrePrune\":false"
+"}";
 
-int main()
+struct Dataset {
+    vector<vector<double>> X;
+    vector<int> y;
+};
+
+struct TTDataset {
+    Dataset train;
+    Dataset test;
+};
+
+unsigned int stopwatch() {
+    static auto startTime = chrono::steady_clock::now();
+
+    auto endTime = chrono::steady_clock::now();
+    auto delta = chrono::duration_cast<chrono::microseconds>(endTime - startTime);
+
+    startTime = endTime;
+
+    return (unsigned int)delta.count();
+}
+
+void printTime(const unsigned int time) {
+    cout << (double)time / 1000000 << " seconds" << endl;
+}
+
+Dataset readData(const string& fileName, const int maxSamples = 0) {
+    // Initialize reader.
+    ArffReader reader;
+    reader.setFile(fileName);
+
+    Dataset ds;
+    Instance* inst;
+    int n = 0;
+    while (reader.hasNextInstance()) {
+        n++;
+        if (maxSamples > 0 && n > maxSamples) {
+            break;
+        }
+
+    	inst = reader.nextInstance();
+
+    	vector<double> x;
+    	for (int i = 0; i < inst->getNumberInputAttributes(); i++) {
+    		x.push_back(inst->getInputAttributeValue(i));
+    	}
+
+    	ds.X.push_back(x);
+    	ds.y.push_back((int)inst->getOutputAttributeValue(0));
+
+        delete inst;
+    }
+
+    return ds;
+}
+
+TTDataset splitData(const Dataset& dataset, const double testSetFraction = 0.25) {
+    TTDataset ttDataset;
+    const size_t dsSize = dataset.X.size();
+    const int trainSetSize = (int)round(max(0.0, min(1.0 - testSetFraction, 1.0)) * dsSize);
+
+    for (int i = 0; i < dsSize; i++) {
+        if (i < trainSetSize) {
+            ttDataset.train.X.push_back(dataset.X[i]);
+            ttDataset.train.y.push_back(dataset.y[i]);
+        }
+        else {
+            ttDataset.test.X.push_back(dataset.X[i]);
+            ttDataset.test.y.push_back(dataset.y[i]);
+        }
+    }
+
+    return ttDataset;
+}
+
+void printData(const Dataset& dataset, const bool verbose = false) {
+    // Print feature matrix.
+    const size_t xRows = dataset.X.size();
+    const size_t xCols = xRows > 0 ? dataset.X[0].size() : 0;
+
+    cout << "X: shape(" << xRows << ", " << xCols << ")" << endl;
+
+    if (verbose) {
+        for (int i = 0; i < xRows; i++) {
+            for (int j = 0; j < xCols; j++) {
+                cout << dataset.X[i][j] << " ";
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
+
+    // Print target vector.
+    const size_t ySize = dataset.y.size();
+
+    cout << "y: shape(" << ySize << ")" << endl;
+
+    if (verbose) {
+        for (int i = 0; i < ySize; i++) {
+            cout << dataset.y[i] << " ";
+        }
+        cout << endl;
+    }
+}
+
+void testTask() {
+	const string taskName = "EvaluatePrequential";
+	const string taskParams = "{"
+        "\"DataSource\": \"covtypeNorm.arff\","
+        "\"Evaluator\": {"
+            "\"Frequency\": \"10000\","
+            "\"Name\": \"BasicClassificationEvaluator\""
+        "},"
+        "\"Learner\": {"
+            "\"LeafLearner\": \"NBAdaptive\","
+            "\"Name\": \"HoeffdingTree\""
+        "},"
+        "\"Name\": \"EvaluatePrequential\","
+        "\"Reader\": \"ArffReader\""
+    "}";
+
+	Task* task = (Task*)CREATE_CLASS(taskName);
+	task->setParams(taskParams);
+	task->doTask();
+
+    delete task;
+}
+
+void testBatch(const string& fileName, const int datasetSize, const double testSetFraction = 0.25) {
+    cout << "*******************" << endl;
+    cout << "* BATCH LEARNING: *" << endl;
+    cout << "*******************" << endl;
+    cout << endl;
+
+    cout << "Initializing data... ";
+    
+    stopwatch();
+    const Dataset ds = readData(fileName, datasetSize);
+    printTime(stopwatch());
+
+    cout << endl;
+    cout << "Dataset: " << endl;
+    printData(ds);
+
+    const TTDataset ttds = splitData(ds, testSetFraction);
+    cout << "Train Set: " << endl;
+    printData(ttds.train);
+    cout << "Test Set: " << endl;
+    printData(ttds.test);
+
+    cout << endl;
+    cout << "Training... ";
+
+    HoeffdingTree learner;
+    learner.setParams(htParams);
+
+    BasicClassificationEvaluator evaluator;
+    learner.setEvaluator(&evaluator);
+
+    stopwatch();
+    learner.process(ttds.train.X, ttds.train.y);
+    printTime(stopwatch());
+
+    cout << evaluator.toString() << endl;
+    cout << "Testing... ";
+
+    const vector<int> predictions = learner.predict(ttds.test.X);
+    const size_t testSetSize = ttds.test.y.size();
+    int hits = 0;
+
+    stopwatch();
+    for (int i = 0; i < testSetSize; i++) {
+        if (ttds.test.y[i] == predictions[i]) {
+            hits++;
+        }
+    }
+    printTime(stopwatch());
+
+    cout << endl;
+    cout << "Accuracy: " << hits << " / " << testSetSize << " = " << (double)hits / testSetSize << endl;
+
+    const string modelFileName = "htBatch.json";
+    cout << "Saving to file: " << modelFileName << endl;
+    learner.exportToFile(modelFileName);
+}
+
+void testIncremental(const string& fileName, const int datasetSize, const double testSetFraction = 0.25) {
+    cout << "*************************" << endl;
+    cout << "* INCREMENTAL LEARNING: *" << endl;
+    cout << "*************************" << endl;
+    cout << endl;
+
+    const int trainSetSize = (int)round(max(0.0, min(1.0 - testSetFraction, 1.0)) * datasetSize);
+    const int testSetSize = datasetSize - trainSetSize;
+    ArffReader reader;
+    reader.setFile(fileName);
+
+    HoeffdingTree learner;
+    learner.setParams(htParams);
+
+    BasicClassificationEvaluator evaluator;
+    learner.setEvaluator(&evaluator);
+
+    Instance* inst;
+    short state = 0;
+    int hits = 0;
+    int n = 0;
+    while (reader.hasNextInstance()) {
+        n++;
+        if (datasetSize > 0 && n > datasetSize) {
+            break;
+        }
+
+        inst = reader.nextInstance();
+
+        if (n <= trainSetSize) {
+            if (state == 0) {
+                state++;
+
+                cout << "Training... ";
+                stopwatch();
+            }
+            learner.process(*inst);
+        }
+        else {
+            if (state == 1) {
+                state++;
+
+                printTime(stopwatch());
+                cout << evaluator.toString() << endl;
+                cout << "Testing... ";
+                stopwatch();
+            }
+
+            int prediction = learner.predict(*inst);
+            if ((int)inst->getLabel() == prediction) {
+                hits++;
+            }
+        }
+
+        delete inst;
+    }
+    printTime(stopwatch());
+
+    cout << endl;
+    cout << "Accuracy: " << hits << " / " << testSetSize << " = " << (double)hits / testSetSize << endl;
+
+    const string modelFileName = "htIncremental.json";
+    cout << "Saving to file: " << modelFileName << endl;
+    learner.exportToFile(modelFileName);
+}
+
+int main(int argc, char* argv[])
 {
-	//string dataFile = "covtypeNorm.arff";
-	string dataFile = "data.csv";
-	//ArffReader reader;
-	//CSVReader reader;
+    const string fileName = "data.arff";
+    const int datasetSize = 100000;
+    const double testSetFraction = 0.25;
 
-	//if (!reader.setFile(dataFile)) {
-	//	printf("Failed to open file: %s ", dataFile.c_str());
-	//	return 1;
-	//}
-
-	int counter = 0;
-	//bool testing = false;
-	int setSize = 10000; // max: 581012
-	const double trainingSetFraction = 1.0;
-
-	// Build vectors
-	std::cout << "Building vectors... " << endl;
-
-	vector<vector<double>> X;
-	vector<int> y;
-	//Instance* inst;
-	
-	//while (reader.hasNextInstance()) {
-	//	counter++;
-	//	printf("Counetr: %d\n", counter);
-
-	//	if (counter > setSize) {
-	//		break;
-	//	}
-
-	//	inst = reader.nextInstance();
-
-	//	vector<double> x;
-
-	//	for (int i = 0; i < inst->getNumberInputAttributes(); i++) {
-	//		x.push_back(inst->getInputAttributeValue(i));
-	//		//printf("%f ", inst->getInputAttributeValue(i));
-	//	}
-
-	//	X.push_back(x);
-	//	y.push_back(inst->getOutputAttributeValue(0));
-	//	//printf("%f\n", inst->getOutputAttributeValue(0));
-
-	//	//cout << "Class: " << inst->getOutputAttributeValue(0) << " " << typeid(inst->getOutputAttributeValue(0)).name() << endl;
-	//}
-
-	ifstream infile(dataFile);
-
-	if (infile.fail()) {
-		printf("Failed to open file: %s ", dataFile.c_str());
-		return 1;
-	}
-
-	string line;
-
-	while (getline(infile, line)) {
-		counter++;
-
-		if (counter > setSize) {
-			break;
-		}
-
-		istringstream iss(line);
-		string str;
-
-		if (!(iss >> str)) {
-			break;
-		}
-
-		//cout << str << endl;
-
-		const string delim = ",";
-		size_t start = 0;
-		size_t end = str.find(delim);
-		vector<double> x;
-
-		while ((end = str.find(delim, start)) != string::npos) {
-			x.push_back(stod(str.substr(start, end - start)));
-			//printf("%f ", stod(str.substr(start, end - start)));
-			start = end + delim.size();
-		}
-		y.push_back(stod(str.substr(start, end)));
-		//printf("%f\n", stod(str.substr(start, end)));
-		X.push_back(x);
-	}
-
-	// Train
-	std::cout << endl << "Training... " << endl;
-
-	//vector<string> attribs {
-	//	"",
-	//	"",
-	//	"",
-	//	"",
-	//	"",
-	//	"",
-	//	"",
-	//	"",
-	//	"",
-	//	"",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//	"0,1",
-	//};
-	//vector<string> classes {
-	//	"1,2,3,4,5,6,7"
-	//};
-	vector<string> attribs {
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-	};
-	vector<string> classes {
-		"0,1"
-	};
-
-	HoeffdingTree learner(attribs, classes);
-	//learner.setInstanceInformation(attribs, classes);
-	learner.setParams(
-		"{"
-			"\"MaxByteSize\":33554432,"
-			"\"MemoryEstimatePeriod\":1000000,"
-			"\"GracePeriod\":200,"
-			"\"SplitConfidence\":0.0000001,"
-			"\"TieThreshold\":0.05,"
-			"\"BinarySplits\":false,"
-			"\"StopMemManagement\":false,"
-			"\"RemovePoorAtts\":false,"
-			"\"LeafLearner\":\"NB\","
-			"\"BbThreshold\":0,"
-			"\"ShowTreePath\":false,"
-			"\"TreePropertyIndexList\":\"\","
-			"\"NoPrePrune\":false"
-		"}"
-	);
-	learner.fit(X, y);
-
-	// Predict
-	std::cout << endl << "Predicting... " << endl;
-
-	for (int i = 0; i < min(500, (int)X.size()); i++) {
-		//printf("\n");
-		//for (int j = 0; j < X[i].size(); j++) {
-		//	printf("%f ", X[i][j]);
-		//}
-		//printf("%f ", (double)y[i]);
-		std::cout << "Predicted: " << learner.predict(X[i]) << ", Expected: " << y[i] << endl;
-	}
-
-	// Output model
-	string modelFile = "hoeffdingTree.json";
-
-	if (!learner.exportToFile(modelFile)) {
-		printf("Failed to export model to file: %s .", modelFile.c_str());
-		return 1;
-	}
-	else {
-		printf("Model written to: %s\n", modelFile.c_str());
-	}
+    testBatch(fileName, datasetSize, testSetFraction);
+    cout << endl;
+    testIncremental(fileName, datasetSize, testSetFraction);
 
 	return 0;
 }
