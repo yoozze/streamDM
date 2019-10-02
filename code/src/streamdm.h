@@ -58,8 +58,6 @@ LearnerWrapper<T>::LearnerWrapper() : T() {}
 
 template <>
 LearnerWrapper<HT::HoeffdingTree>::LearnerWrapper() {
-    cout << "Hoeffding Tree!" << endl;
-
     const string htParams = "{"
         "\"MaxByteSize\":33554432,"
         "\"MemoryEstimatePeriod\":1000000,"
@@ -81,8 +79,6 @@ LearnerWrapper<HT::HoeffdingTree>::LearnerWrapper() {
 
 template <>
 LearnerWrapper<HT::HoeffdingAdaptiveTree>::LearnerWrapper() {
-    cout << "Hoeffding Adaptive Tree!" << endl;
-
     const string htParams = "{"
         "\"MaxByteSize\":33554432,"
         "\"MemoryEstimatePeriod\":1000000,"
