@@ -30,3 +30,12 @@ with open("data.arff") as f:
     predictions = learner.predict(X_test)
     print(f'\npredictions {predictions.shape}: \n{predictions}')
     print('Finished!')
+
+    # learner.export_json("HoeffdingTree.json")
+    # print('Model saved!')
+    # 
+    # learner1 = sdm.HoeffdingTree()
+    # learner1.import_json("HoeffdingTree.json")
+    # print('Model loaded!')
+    # predictions1 = learner1.predict(X_test)
+    # print(f'\npredictions {predictions.shape}: \n{predictions}')

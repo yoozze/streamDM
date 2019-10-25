@@ -282,12 +282,12 @@ void testIncremental(const string& fileName, const int datasetSize, const double
 int main(int argc, char* argv[])
 {
     const string fileName = "data.arff";
-    const int datasetSize = 100000;
+    const int datasetSize = 20000;
     const double testSetFraction = 0.25;
 
-    testBatch(fileName, datasetSize, testSetFraction);
-    cout << endl;
     testIncremental(fileName, datasetSize, testSetFraction);
+    cout << endl;
+    testBatch(fileName, datasetSize, testSetFraction);
 
 	return 0;
 }
