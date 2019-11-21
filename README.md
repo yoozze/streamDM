@@ -20,7 +20,9 @@ TODO
 
 ### Build from source
 Prerequisites:
-* Python 3 with numpy package
+* Python 3 (with `python-dev` on linux)
+* numpy package
+* pip package manager 
 
 Clone git repository:
 ```
@@ -48,7 +50,11 @@ Build:
 cd streamDM-Cpp
 make
 ```
-Test your build:
+To test your build, first make sure `sklearn` is installed:
+```
+pip3 install sklearn
+```
+Run test script:
 ```
 cd build/release
 python3 test.py
@@ -71,40 +77,15 @@ Open solution and build it (with release configuration):
 ```
 build/streamDM-cpp.sln
 ```
-Test your build:
+To test your build, first make sure `sklearn` is installed:
+```
+pip install sklearn
+```
+Run test script:
 ```
 cd build/release
 python test.py
 ```
-
-<!-- Getting Started:
-
-First download log4cpp library (```https://github.com/orocos-toolchain/log4cpp```). 
-Install it in a separate directory and note the shared library file location (usually /usr/local/lib). Add the shared library directory to the path:
-```export LD_LIBRARY_PATH=/usr/local/lib```. Be sure, to copy header files from log4cpp include directory into log4cpp in the ```code/src``` directory. -->
-
-
-<!-- Then download and build streamDM in C++:
-
-```
-git clone https://github.com/klemenkenda/streamDM-Cpp.git
-cd streamDM-Cpp
-make
-```
-
-Download a dataset:
-
-```
-wget "http://downloads.sourceforge.net/project/moa-datastream/Datasets/Classification/covtypeNorm.arff.zip"
-unzip covtypeNorm.arff.zip
-```
-
-Evaluate the dataset:
-
-```
-./streamdm-cpp "EvaluatePrequential -l (HoeffdingTree -l NBAdaptive) -r ArffReader -ds covtypeNorm.arff -e (BasicClassificationEvaluator -f 100000)"
-``` -->
-
 
 ## Methods
 
