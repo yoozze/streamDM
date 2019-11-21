@@ -1,4 +1,4 @@
-from streamdm import HoeffdingTree
+from streamdm import HoeffdingTree, HoeffdingAdaptiveTree
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import KFold
 from sklearn.metrics import classification_report
@@ -14,6 +14,10 @@ methods = [
     {
         'name': 'Hoeffding Tree (streamDM)',
         'ctor': HoeffdingTree
+    },
+    {
+        'name': 'Hoeffding Adaptive Tree (streamDM)',
+        'ctor': HoeffdingAdaptiveTree
     }
 ]
 
