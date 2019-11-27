@@ -269,6 +269,9 @@ int Learner::predict(const vector<double>& features) {
     instance.setInstanceInformation(mInstanceInformation);
     instance.addValues(features);
 
+    vector<double> labels { -1.0 };
+    instance.addLabels(labels);
+
     int index = predict(instance);
 
     return stoi(instance.getOutputAttribute(0)->getValue(index));
