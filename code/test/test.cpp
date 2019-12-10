@@ -76,8 +76,8 @@ Dataset readData(const string& fileName, const int maxSamples = 0) {
     	}
 
     	ds.X.push_back(x);
-    	//ds.y.push_back((int)inst->getOutputAttributeValue(0));
-    	ds.y.push_back(stoi(inst->getOutputAttribute(0)->getValue(inst->getOutputAttributeValue(0))));
+    	//ds.y.push_back((int)inst->getLabel());
+    	ds.y.push_back(stoi(inst->getOutputAttribute(0)->getValue(inst->getLabel())));
 
         delete inst;
     }

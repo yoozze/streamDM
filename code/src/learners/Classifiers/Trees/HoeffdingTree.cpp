@@ -716,7 +716,12 @@ void HoeffdingTree::toJson(Json::Value& jv) {
 	jv["growthAllowed"] = this->growthAllowed;
 	jv["trainingWeightSeenByModel"] = this->trainingWeightSeenByModel;
 
-	this->treeRoot->toJson(jv["treeRoot"]);
+    if (this->treeRoot != nullptr) {
+	    this->treeRoot->toJson(jv["treeRoot"]);
+    }
+    else {
+        jv["treeRoot"] = Json::Value();
+    }
 }
 
 bool HoeffdingTree::importFromJson(const Json::Value& jv) {

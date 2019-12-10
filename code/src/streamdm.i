@@ -1,4 +1,5 @@
 %module streamdm
+%rename (fn) file_name;
 
 %{
     #define SWIG_FILE_WITH_INIT
@@ -22,10 +23,31 @@
 %apply (int* ARGOUT_ARRAY1, int DIM1) {(int* predictions, int nPredictions)};
 
 %pythoncode %{
+import json
 import numpy as np
+
+def capitalizeKeys(kwargs):
+    args = {}
+    for k, v in kwargs.items():
+        key = ''.join([s.capitalize() for s in k.split('_')])
+        args[key] = capitalizeKeys(v) if isinstance(v, dict) else v
+    return args
 %}
 
 // Rewrite methods
+%extend LearnerWrapper {
+    %pythoncode %{
+        SWIG__init__ = __init__
+        def __init__(self, *args, **kwargs):
+            self.label_map = {}
+            self.label_map_inv = {}
+            # Pass all keyword arguments as JSON encoded positional argument.
+            # Argument validation should be implemented on the C++ side.
+            args = (json.dumps(capitalizeKeys(kwargs)),)
+            self.SWIG__init__(*args)
+    %}
+};
+
 %feature("shadow") fit(double*, int, int, int*, int) %{
 def fit(self, samples, targets):
     indexed_targets = []
@@ -43,11 +65,6 @@ def predict(self, samples):
     predictions_len = len(samples)
     predictions = $action(self, samples, predictions_len)
     return np.array([self.label_map_inv[p] for p in predictions])
-%}
-
-%feature("pythonprepend") LearnerWrapper() %{
-    self.label_map = {}
-    self.label_map_inv = {}
 %}
 
 %include "streamdm.h"

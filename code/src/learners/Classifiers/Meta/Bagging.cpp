@@ -157,7 +157,8 @@ string Bagging::getEnsemblePrediction(const Instance& instance) {
 }
 
 Learner* Bagging::newLearner() {
-	Learner* learner = (Learner*)CREATE_CLASS(mLearnerName) ;
+	Learner* learner = (Learner*)CREATE_CLASS(mLearnerName);
+
 	if (mLearnerParams != "") {
 		learner->setParams(mLearnerParams);
 	}

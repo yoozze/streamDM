@@ -31,39 +31,43 @@ REGISTER_COMMAND_LINE_PARAMETER(
 
 //Naive Bayes Classifier
 NaiveBayes::NaiveBayes():
-		nbStatistics(nullptr)
+	nbStatistics(nullptr),
+    numberClasses(0),
+    classPrediction(nullptr)
 {
     init = false;
-	//instancesCorrectlyClassified = 0;
 	instancesSeen = 0;
 }
 
-NaiveBayes::~NaiveBayes() 
-{
-	if (init) 
-    {
-		delete nbStatistics;
-	}
+NaiveBayes::~NaiveBayes() {
+    if (nbStatistics != nullptr) {
+        delete nbStatistics;
+    }
+
+    if (classPrediction != nullptr) {
+        delete[] classPrediction;
+    }
 }
 
 void NaiveBayes::doSetParams() {
 	//
 }
 
-void NaiveBayes::train(const Instance& instance) 
-{
-	if (!init) 
-    {
+void NaiveBayes::train(const Instance& instance) {
+	if (!init) {
         init = true;
 		nbStatistics = new SimpleNaiveBayesStatistics();
+        if (classPrediction == nullptr) {
+            numberClasses = instance.getNumberClasses();
+            classPrediction = new double[numberClasses];
+        }
 	}
 
 	int label = (int) instance.getLabel();
 	double weight = instance.getWeight();
 
 	nbStatistics->addObservation(label, weight);
-	for (int j = 0; j < instance.getNumberInputAttributes(); j++) 
-    {
+	for (int j = 0; j < instance.getNumberInputAttributes(); j++) {
 		double value = instance.getInputAttributeValue(j);
         bool isAttributeNumeric = instance.getInputAttribute(j)->isNumeric();
 		nbStatistics->addObservation(label, j, isAttributeNumeric, value, weight);
@@ -71,49 +75,63 @@ void NaiveBayes::train(const Instance& instance)
 }
 
 double* NaiveBayes::getPrediction(const Instance& instance) {
-	double* classPrediction = new double[instance.getNumberClasses()];
-	for (int i = 0; i < instance.getNumberClasses(); i++) {
+    if (!init) {
+        if (classPrediction == nullptr) {
+            numberClasses = instance.getNumberClasses();
+            classPrediction = new double[numberClasses];
+
+            for (int i = 0; i < numberClasses; i++) {
+                classPrediction[i] = 0.0;
+            }
+        }
+
+        return classPrediction;
+    }
+
+	for (int i = 0; i < numberClasses; i++) {
 		classPrediction[i] = probability(instance, i);
 	}
+
 	return classPrediction;
 }
 
 double NaiveBayes::probability(const Instance& instance, int label) {
-	if (!init)
-	{
+	if (!init) {
 		return 0.0;
 	}
 
-	double prob = this->nbStatistics->probabilityOfClass(label);
+	double prob = nbStatistics->probabilityOfClass(label);
 	for (int j = 0; j < instance.getNumberInputAttributes(); j++) {
 		double value = instance.getInputAttributeValue(j);
-		prob *= this->nbStatistics->probabilityOfClassAttrValue(label, j,
-				value);
+		prob *= nbStatistics->probabilityOfClassAttrValue(label, j, value);
 	}
+
 	return prob;
 }
 
-bool NaiveBayes::exportToJson(Json::Value& jv)
-{
-	if (init)
-	{
-		this->nbStatistics->exportToJson(jv);
-	}
-
+bool NaiveBayes::exportToJson(Json::Value& jv) {
+	if (init) {
+		nbStatistics->exportToJson(jv);
+    }
+    //if (nbStatistics == nullptr) {
+    //    SimpleNaiveBayesStatistics stat;
+    //    stat.exportToJson(jv);
+    //}
+    //else {
+    //    nbStatistics->exportToJson(jv);
+    //}
+ 
 	return true;
 }
 
-bool NaiveBayes::importFromJson(const Json::Value& jv)
-{
-	if (!init)
-	{
-		this->nbStatistics = new SimpleNaiveBayesStatistics();
-		this->nbStatistics->importFromJson(jv);
+bool NaiveBayes::importFromJson(const Json::Value& jv) {
+	if (!init) {
 		init = true;
+		nbStatistics = new SimpleNaiveBayesStatistics();
+		nbStatistics->importFromJson(jv);
+        numberClasses = jv["classCounts"].size();
+        classPrediction = new double[numberClasses];
 	}
 
 	return true;
 }
-
-
-
