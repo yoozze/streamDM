@@ -88,13 +88,21 @@ void LogisticRegression::initWeightAttributes() {
 }
 
 bool LogisticRegression::exportToJson(Json::Value& jv) {
-	Perceptron::exportToJson(jv);
-	jv["lambda"] = mLambda;
+    if (!Perceptron::exportToJson(jv)) {
+        return false;
+    }
+
+    jv["lambda"] = mLambda;
+
 	return true;
 }
 
 bool LogisticRegression::importFromJson(const Json::Value& jv) {
-	Perceptron::importFromJson(jv);
+    if (!Perceptron::importFromJson(jv)) {
+        return false;
+    }
+
 	mLambda = jv["lambda"].asDouble();
+
 	return true;
 }

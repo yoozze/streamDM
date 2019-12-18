@@ -32,8 +32,6 @@ Perceptron::Perceptron():
 	numberInputAttributes(0),
 	numberClasses(0)
 {
-	init = false;
-	instancesSeen = 0;
 	mLearningRatio = 1.0;
 }
 
@@ -64,7 +62,6 @@ void Perceptron::train(const Instance& instance) {
 		weightAttributes.resize(numberClasses);
 		classPrediction = new double[numberClasses];
 		initWeightAttributes();
-		instancesSeen = 0;
 		mLearningRatio = 1.0;
 	}
 
@@ -126,7 +123,7 @@ double* Perceptron::getPrediction(const Instance& instance) {
 
 		return classPrediction;
 	}
-
+    
 	vector<double> value(numberInputAttributes);
 	for (int i = 0; i < numberInputAttributes; i++) {
 		value[i] = instance.getInputAttributeValue(i);
@@ -155,6 +152,10 @@ void Perceptron::multiplyWeightAttributes(double value, int i, int j) {
 }
 
 bool Perceptron::exportToJson(Json::Value& jv) {
+    if (!init) {
+        return false;
+    }
+
 	jv["nClasses"] = numberClasses;
 	jv["nInputAttributes"] = numberInputAttributes;
 	jv["learningRatio"] = mLearningRatio;
@@ -162,29 +163,44 @@ bool Perceptron::exportToJson(Json::Value& jv) {
 	for (unsigned int i = 0; i < weightAttributes.size(); ++i) {
 		Json::Value attribJson;
 		for (unsigned int j = 0; j < weightAttributes[i].size(); ++j) {
-			attribJson[i].append(weightAttributes[i][j]);
+			attribJson.append(weightAttributes[i][j]);
 		}
 		jv["weightAttributes"].append(attribJson);
 	}
+
+    jv["instanceInformation"] = mInstanceInformation->toJson();
 
 	return true;
 }
 
 bool Perceptron::importFromJson(const Json::Value& jv) {
-	numberClasses = jv["nClasses"].asInt();
+    const int nClasses = jv["nClasses"].asInt();
+
+    if (!nClasses || nClasses != jv["weightAttributes"].size()) {
+        return false;
+    }
+
+	numberClasses = nClasses;
 	numberInputAttributes = jv["nInputAttributes"].asInt();
 	mLearningRatio = jv["learningRatio"].asDouble();
 
-	unsigned int iSize = jv["weightAttributes"].size();
-	weightAttributes.resize(iSize);
+	weightAttributes.resize(numberClasses);
 
-	for (unsigned int i = 0; i < iSize; ++i) {
+	for (unsigned int i = 0; i < numberClasses; ++i) {
 		const Json::Value& attribJson = jv["weightAttributes"][i];
 		weightAttributes[i].resize(attribJson.size());
 		for (unsigned int j = 0; j < attribJson.size(); ++j) {
 			weightAttributes[i][j]= attribJson[j].asDouble();
 		}
 	}
+
+    setAttributes(jv["instanceInformation"]);
+
+    if (classPrediction == nullptr) {
+        classPrediction = new double[numberClasses];
+    }
+
+    init = true;
     
 	return true;
 }

@@ -764,11 +764,19 @@ bool HoeffdingTree::importFromJson(const Json::Value& jv) {
 		this->treeRoot = new AdaLearningNode(jv["treeRoot"]);
 	}
 
+    setAttributes(jv["instanceInformation"]);
+
 	return true;
 }
 
 bool HoeffdingTree::exportToJson(Json::Value& jv) {
+    if (treeRoot == nullptr) {
+        return false;
+    }
+
 	this->toJson(jv);
+    jv["instanceInformation"] = mInstanceInformation->toJson();
+
 	return true;
 }
 

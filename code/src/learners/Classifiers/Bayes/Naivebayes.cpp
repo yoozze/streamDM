@@ -35,8 +35,6 @@ NaiveBayes::NaiveBayes():
     numberClasses(0),
     classPrediction(nullptr)
 {
-    init = false;
-	instancesSeen = 0;
 }
 
 NaiveBayes::~NaiveBayes() {
@@ -110,28 +108,33 @@ double NaiveBayes::probability(const Instance& instance, int label) {
 }
 
 bool NaiveBayes::exportToJson(Json::Value& jv) {
-	if (init) {
-		nbStatistics->exportToJson(jv);
+    if (!init) {
+        return false;
     }
-    //if (nbStatistics == nullptr) {
-    //    SimpleNaiveBayesStatistics stat;
-    //    stat.exportToJson(jv);
-    //}
-    //else {
-    //    nbStatistics->exportToJson(jv);
-    //}
- 
+
+	nbStatistics->exportToJson(jv);
+    jv["instanceInformation"] = mInstanceInformation->toJson();
+
 	return true;
 }
 
 bool NaiveBayes::importFromJson(const Json::Value& jv) {
-	if (!init) {
-		init = true;
-		nbStatistics = new SimpleNaiveBayesStatistics();
-		nbStatistics->importFromJson(jv);
-        numberClasses = jv["classCounts"].size();
+    const int nClasses = jv["classCounts"].size();
+
+    if (!nClasses) {
+        return false;
+    }
+
+    numberClasses = nClasses;
+	nbStatistics = new SimpleNaiveBayesStatistics();
+	nbStatistics->importFromJson(jv);
+    setAttributes(jv["instanceInformation"]);
+
+    if (classPrediction == nullptr) {
         classPrediction = new double[numberClasses];
-	}
+    }
+
+    init = true;
 
 	return true;
 }

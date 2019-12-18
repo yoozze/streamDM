@@ -151,7 +151,13 @@ bool HoeffdingAdaptiveTree::importFromJson(const Json::Value& jv) {
 }
 
 bool HoeffdingAdaptiveTree::exportToJson(Json::Value& jv) {
+    if (treeRoot == nullptr) {
+        return false;
+    }
+
 	this->toJson(jv);
+    jv["instanceInformation"] = mInstanceInformation->toJson();
+
 	return true;
 }
 
