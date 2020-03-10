@@ -58,6 +58,12 @@ def capitalizeKeys(kwargs):
     %}
 };
 
+%feature("shadow") set_params %{
+def set_params(self, **kwargs):
+    params = json.dumps(capitalizeKeys(kwargs))
+    return $action(self, params)
+%}
+
 %feature("shadow") fit(double*, int, int, int*, int) %{
 def fit(self, samples, targets):
     indexed_targets = []
