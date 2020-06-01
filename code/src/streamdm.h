@@ -93,11 +93,6 @@ template <class T>
 LearnerWrapper<T>::LearnerWrapper(const string& params) : T() {}
 
 template <>
-LearnerWrapper<HT::HoeffdingTree>::LearnerWrapper(const string& params) {
-    LearnerWrapper<HT::HoeffdingTree>::set_params(params);
-}
-
-template <>
 void LearnerWrapper<HT::HoeffdingTree>::set_params(const string& params) {
     const string defaultParams = "{"
         "\"MaxByteSize\":33554432,"
@@ -119,8 +114,8 @@ void LearnerWrapper<HT::HoeffdingTree>::set_params(const string& params) {
 }
 
 template <>
-LearnerWrapper<HT::HoeffdingAdaptiveTree>::LearnerWrapper(const string& params) {
-    LearnerWrapper<HT::HoeffdingAdaptiveTree>::set_params(params);
+LearnerWrapper<HT::HoeffdingTree>::LearnerWrapper(const string& params) {
+    LearnerWrapper<HT::HoeffdingTree>::set_params(params);
 }
 
 template <>
@@ -145,8 +140,8 @@ void LearnerWrapper<HT::HoeffdingAdaptiveTree>::set_params(const string& params)
 }
 
 template <>
-LearnerWrapper<NaiveBayes>::LearnerWrapper(const string& params) {
-    LearnerWrapper<NaiveBayes>::set_params(params);
+LearnerWrapper<HT::HoeffdingAdaptiveTree>::LearnerWrapper(const string& params) {
+    LearnerWrapper<HT::HoeffdingAdaptiveTree>::set_params(params);
 }
 
 template <>
@@ -158,8 +153,8 @@ void LearnerWrapper<NaiveBayes>::set_params(const string& params) {
 }
 
 template <>
-LearnerWrapper<LogisticRegression>::LearnerWrapper(const string& params) {
-    LearnerWrapper<LogisticRegression>::set_params(params);
+LearnerWrapper<NaiveBayes>::LearnerWrapper(const string& params) {
+    LearnerWrapper<NaiveBayes>::set_params(params);
 }
 
 template <>
@@ -173,8 +168,8 @@ void LearnerWrapper<LogisticRegression>::set_params(const string& params) {
 }
 
 template <>
-LearnerWrapper<Perceptron>::LearnerWrapper(const string& params) {
-    LearnerWrapper<Perceptron>::set_params(params);
+LearnerWrapper<LogisticRegression>::LearnerWrapper(const string& params) {
+    LearnerWrapper<LogisticRegression>::set_params(params);
 }
 
 template <>
@@ -187,8 +182,8 @@ void LearnerWrapper<Perceptron>::set_params(const string& params) {
 }
 
 template <>
-LearnerWrapper<MajorityClass>::LearnerWrapper(const string& params) {
-    LearnerWrapper<MajorityClass>::set_params(params);
+LearnerWrapper<Perceptron>::LearnerWrapper(const string& params) {
+    LearnerWrapper<Perceptron>::set_params(params);
 }
 
 template <>
@@ -200,8 +195,8 @@ void LearnerWrapper<MajorityClass>::set_params(const string& params) {
 }
 
 template <>
-LearnerWrapper<Bagging>::LearnerWrapper(const string& params) {
-    LearnerWrapper<Bagging>::set_params(params);
+LearnerWrapper<MajorityClass>::LearnerWrapper(const string& params) {
+    LearnerWrapper<MajorityClass>::set_params(params);
 }
 
 template <>
@@ -226,6 +221,11 @@ void LearnerWrapper<Bagging>::set_params(const string& params) {
         "}";
 
     Bagging::setParams(mergeParams(params, defaultParams));
+}
+
+template <>
+LearnerWrapper<Bagging>::LearnerWrapper(const string& params) {
+    LearnerWrapper<Bagging>::set_params(params);
 }
 
 template <class T>
