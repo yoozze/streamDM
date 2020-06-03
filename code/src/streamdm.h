@@ -26,7 +26,7 @@ Json::Value mergeParams(const Json::Value params, const Json::Value defaultParam
         }
         else {
             // TODO: LOG_ERROR
-            cout << "Unknown argumnet: " + key << endl;
+            cout << "Unknown argument: " + key << endl;
         }
     }
 
