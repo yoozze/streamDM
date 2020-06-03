@@ -26,7 +26,7 @@ methods = [
             'stop_mem_management': False,
             'remove_poor_atts': False,
             'leaf_learner': 'NB',
-            'bb_threshold': 0,
+            'nb_threshold': 0,
             'tree_property_index_list': "",
             'no_pre_prune': False
         }
@@ -44,7 +44,7 @@ methods = [
             'stop_mem_management': False,
             'remove_poor_atts': False,
             'leaf_learner': 'NB',
-            'bb_threshold': 0,
+            'nb_threshold': 0,
             'tree_property_index_list': "",
             'no_pre_prune': False
         }
@@ -65,7 +65,7 @@ methods = [
                 'stop_mem_management': False,
                 'remove_poor_atts': False,
                 'leaf_learner': 'NB',
-                'bb_threshold': 0,
+                'nb_threshold': 0,
                 'tree_property_index_list': "",
                 'no_pre_prune': False
             }
